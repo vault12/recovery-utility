@@ -9,9 +9,15 @@
   "engines": {
     "node": "15.8.0"
   },
-  "scripts": {
-    "build": "tsc index"
+  "bin": {
+    "vault12-recovery": "./index.js"
   },
+  "scripts": {
+    "prepare": "tsc index"
+  },
+  "files": [
+    "index.js"
+  ],
   "devDependencies": {
     "@types/adm-zip": "0.4.33",
     "@types/node": "14.14.25",
