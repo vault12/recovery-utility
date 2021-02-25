@@ -1,13 +1,24 @@
 {
-  "name": "@vault12/recovery-utility",
-  "version": "0.1.0",
-  "description": "desktop utility for unlocking assets for vault12 app",
+  "name": "vault12-recovery",
+  "version": "1.0.1",
+  "description": "A command-line utility for recovering assets from the raw data exported from Vault12 mobile app",
   "main": "index.js",
   "author": "Vault12",
   "homepage": "https://vault12.com",
-  "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/vault12/recovery-utility.git"
+  },
+  "keywords": [
+    "vault12",
+    "unlock",
+    "recovery",
+    "vault",
+    "utility"
+  ],
+  "license": "MIT",
   "engines": {
-    "node": "15.8.0"
+    "node": ">=14"
   },
   "bin": {
     "vault12-recovery": "./index.js"
@@ -21,7 +32,7 @@
   "devDependencies": {
     "@types/adm-zip": "0.4.33",
     "@types/node": "14.14.25",
-    "typescript": "4.1.4"
+    "typescript": "4.2.2"
   },
   "dependencies": {
     "adm-zip": "0.5.2",
