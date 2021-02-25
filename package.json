@@ -1,6 +1,6 @@
 {
   "name": "vault12-recovery",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "A command-line utility for recovering assets from the raw data exported from Vault12 mobile app",
   "main": "index.js",
   "author": "Vault12",
@@ -18,7 +18,7 @@
   ],
   "license": "MIT",
   "engines": {
-    "node": ">=14"
+    "node": ">=12"
   },
   "bin": {
     "vault12-recovery": "./index.js"
