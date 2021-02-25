@@ -16,7 +16,7 @@
   </a>
 </p>
 
-# Overwiew
+# Overview
 
 A command-line utility for recovering assets from the raw data exported from [Vault12 mobile app](https://vault12.com/download/).
 
@@ -40,7 +40,7 @@ $ vault12-recovery ~/vault12-files
 
 ## License
 
-RingCypher is released under the [MIT License](http://opensource.org/licenses/MIT).
+Vault12 Recovery Utility is released under the [MIT License](http://opensource.org/licenses/MIT).
 
 ## Legal Reminder
 
