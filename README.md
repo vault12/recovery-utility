@@ -29,11 +29,14 @@ $ npm i -g vault12-recovery
 ```
 ## Usage
 
-1. Export the decryption key from the Vault12 app: `Settings > Advanced > Export My Vault’s Decryption Key`
-2. Collect the raw Vault data from several Guardian devices via `Settings > Advanced > Export Data for External Vault`. You'll need to collect the amount of files equal to the **Number of Confirmations** you selected when creating the Vault
-3. Place exported archives and `vault12.json` file in the same directory, e.g. `/directory/with/exported/files`
-4. In terminal, run `vault12-recovery /directory/with/exported/files`
-5. You should find all recovered assets from the Vault in the directory `/directory/with/exported/files/output`
+1. Export the decryption key (`vault12.json`) from the Vault12 app: *Settings > Advanced > Export My Vault’s Decryption Key*
+2. Collect the raw Vault data from several Guardian devices via *Settings > Advanced > Export Data for External Vault*. You'll need to collect the amount of files equal to the **Number of Confirmations** you selected when creating the Vault.
+3. Place all exported archives and `vault12.json` file in the same directory, e.g. `~/vault12-files`.
+4. In terminal, run
+```
+$ vault12-recovery ~/vault12-files
+```
+5. You should find all recovered assets from the Vault in the directory `~/vault12-files/output`.
 
 ## License
 
