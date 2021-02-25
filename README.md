@@ -18,7 +18,7 @@
 
 # Overwiew
 
-A command-line utility for recovering assets from the raw data exported from Vault12 mobile app.
+A command-line utility for recovering assets from the raw data exported from [Vault12 mobile app](https://vault12.com/download/).
 
 ## Installation
 
@@ -29,7 +29,7 @@ $ npm i -g vault12-recovery
 ```
 ## Usage
 
-1. Export the decryption key (`vault12.json`) from the Vault12 app: *Settings > Advanced > Export My Vault’s Decryption Key*
+1. Export the decryption key (`vault12.json`) from the Vault12 app: *Settings > Advanced > Export My Vault’s Decryption Key*.
 2. Collect the raw Vault data from several Guardian devices via *Settings > Advanced > Export Data for External Vault*. You'll need to collect the amount of files equal to the **Number of Confirmations** you selected when creating the Vault.
 3. Place all exported archives and `vault12.json` file in the same directory, e.g. `~/vault12-files`.
 4. In terminal, run

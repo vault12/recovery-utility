@@ -5,7 +5,7 @@ import { ExportAssetMetadata, ExportIndexFileModel, ExportVaultMetadata } from '
 const AdmZip = require('adm-zip');
 const calcMd5 = require('md5');
 const { join } = require('shamir');
-const sodium = require('sodium-javascript')
+const sodium = require('sodium-javascript');
 const pathLib = require('path');
 
 const outputDir = 'output';
@@ -25,24 +25,24 @@ function getDirectory() {
     throw new Error('First parameter should be a directory');
   }
   if (!fs.lstatSync(dir).isDirectory()) {
-    throw new Error(`${dir} expect to be a directory`);
+    throw new Error(`${dir} expected to be a directory`);
   }
   return dir;
 }
 
 function getVaultData(): ExportVaultMetadata {
   const keyFilePath = path(keyFile);
-  if(!fs.lstatSync(keyFilePath).isFile()) {
-    throw new Error(`Expect ${dir} to contain ${keyFilePath}`);
+  if (!fs.lstatSync(keyFilePath).isFile()) {
+    throw new Error(`Expected ${dir} to contain ${keyFilePath}`);
   }
-  return JSON.parse(fs.readFileSync(keyFilePath, {encoding: 'utf-8'}));
+  return JSON.parse(fs.readFileSync(keyFilePath, { encoding: 'utf-8' }));
 }
 
 function getZipArchives() {
   const zipArchives = fs.readdirSync(dir).filter(p => pathLib.extname(p) === '.zip');
 
   if (zipArchives.length < vaultData.shardsRequiredToUnlock) {
-    throw new Error(`According to your security setting you need to receive data from ${vaultData.shardsRequiredToUnlock} guardians but have only ${zipArchives.length}`);
+    throw new Error(`According to your security policy, you need to receive data from ${vaultData.shardsRequiredToUnlock} guardians, but you provided only ${zipArchives.length}`);
   }
 
   return zipArchives;
@@ -55,7 +55,7 @@ function restoreAssets() {
     try {
       recombinedFile = recombineAsset(asset)
     } catch (error) {
-      console.error(`Failed to recombine ${asset.name}`, error);
+      console.error(`Failed to recover ${asset.name}`, error);
       return;
     }
     let plainText: Buffer;
@@ -66,13 +66,13 @@ function restoreAssets() {
       return;
     }
     fs.writeFileSync(path(outputDir, asset.name), plainText);
-    console.log(`${asset.name} successfully unlocked`)
+    console.log(`${asset.name} successfully unlocked`);
   })
   console.log(`Assets successfully unlocked and stored in ${workingOutputDir}`);
 }
 
 function createDir(workingOutputDir: string) {
-  if (!fs.existsSync(workingOutputDir)){
+  if (!fs.existsSync(workingOutputDir)) {
     fs.mkdirSync(workingOutputDir);
   }
   return workingOutputDir;
@@ -84,11 +84,11 @@ function findAssetShardsInArchives() {
 
     new AdmZip(path(zipArchive)).extractAllTo(path(archiveDirName), true);
 
-    const {shards} = getArchiveIndex(archiveDirName);
+    const { shards } = getArchiveIndex(archiveDirName);
 
     vaultData.assetsMetaData.forEach(asset => {
       const foundShard = asset.shards.find((assetShard) => {
-        const foundShard = shards.find(({shardId}) => shardId === assetShard.id);
+        const foundShard = shards.find(({ shardId }) => shardId === assetShard.id);
         if (!foundShard) {
           return false;
         }
@@ -105,10 +105,10 @@ function findAssetShardsInArchives() {
 }
 
 function getArchiveIndex(archiveDirName: string) {
-  return JSON.parse(fs.readFileSync(path(archiveDirName, indexFile), {encoding: 'utf-8'})) as ExportIndexFileModel
+  return JSON.parse(fs.readFileSync(path(archiveDirName, indexFile), { encoding: 'utf-8' })) as ExportIndexFileModel;
 }
 
-function validateFile(filePath:  string, expectedMd5: string) {
+function validateFile(filePath: string, expectedMd5: string) {
   const fileData = fs.readFileSync(filePath);
   const md5 = calcMd5(fileData);
   if (md5 !== expectedMd5) {
@@ -121,28 +121,28 @@ function path(...args: string[]) {
 }
 
 function recombineAsset(asset: ExportAssetMetadata) {
-    const shardPaths = asset.shards.filter(shard => !!shard.path).map(shard => shard.path);
+  const shardPaths = asset.shards.filter(shard => !!shard.path).map(shard => shard.path);
 
-    if (shardPaths.length < vaultData.shardsRequiredToUnlock) {
-      console.error(`Only ${shardPaths.length} shards for file ${asset.name} when ${vaultData.shardsRequiredToUnlock} needed`);
-      return;
-    }
-    /**
-    * prepare for format required by shamir
-    * 1st byte of file is index of shard the rest is data
-    */
-    const buffers = shardPaths.map((path) => fs.readFileSync(path));
-    const obj = {};
-    buffers.forEach((v) => obj[v[0]]=v.slice(1));
-    return join(obj);
+  if (shardPaths.length < vaultData.shardsRequiredToUnlock) {
+    console.error(`Only ${shardPaths.length} shards found for asset ${asset.name} when ${vaultData.shardsRequiredToUnlock} needed`);
+    return;
+  }
+  /**
+  * prepare for format required by shamir
+  * 1st byte of file is index of shard the rest is data
+  */
+  const buffers = shardPaths.map((path) => fs.readFileSync(path));
+  const obj = {};
+  buffers.forEach((v) => obj[v[0]] = v.slice(1));
+  return join(obj);
 }
 
 function decryptAsset(asset: ExportAssetMetadata, encryptedData: Buffer, masterKey: Buffer) {
-  const nonce  = Buffer.from(asset.nonce, 'base64');
+  const nonce = Buffer.from(asset.nonce, 'base64');
   const plainText = Buffer.alloc(encryptedData.length - sodium.crypto_secretbox_MACBYTES);
   const res = sodium.crypto_secretbox_open_easy(plainText, encryptedData, nonce, masterKey);
   if (!res) {
-    throw new Error(`Failed to encrypt ${asset.name}`);
+    throw new Error(`Failed to decrypt ${asset.name}`);
   }
   return plainText;
 }
