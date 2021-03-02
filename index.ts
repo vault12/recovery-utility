@@ -109,6 +109,10 @@ function getArchiveIndex(archiveDirName: string) {
 }
 
 function validateFile(filePath: string, expectedMd5: string) {
+  if (!expectedMd5) {
+    console.warn('Warning: skipping md5 verification, likely legacy asset detected');
+    return;
+  }
   const fileData = fs.readFileSync(filePath);
   const md5 = calcMd5(fileData);
   if (md5 !== expectedMd5) {
