@@ -7,10 +7,15 @@ const calcMd5 = require('md5');
 const { join } = require('shamir');
 import { secretbox } from 'tweetnacl';
 const pathLib = require('path');
+const chalk = require('chalk');
+const { version } = require('./package.json');
 
 const outputDir = 'output';
 const keyFile = 'vault12.json';
 const indexFile = 'index.json';
+
+console.log(chalk.whiteBright(`Vault12 Recovery Utility ${version}`));
+console.log('-------------------');
 
 const dir = getDirectory();
 const vaultData = getVaultData();
@@ -50,7 +55,10 @@ function getZipArchives() {
 
 function restoreAssets() {
   const masterKey = Buffer.from(vaultData.masterKey, 'base64');
-  vaultData.assetsMetaData.forEach(asset => {
+  const assetsCount = vaultData.assetsMetaData.length;
+
+  vaultData.assetsMetaData.forEach((asset, i) => {
+    process.stdout.write(`${chalk.yellow(`${i+1}/${assetsCount}`)} Unlocking ${chalk.bold(asset.name)}... `);
     let recombinedFile: Buffer;
     try {
       recombinedFile = recombineAsset(asset)
@@ -66,9 +74,9 @@ function restoreAssets() {
       return;
     }
     fs.writeFileSync(path(outputDir, asset.name), plainText);
-    console.log(`${asset.name} successfully unlocked`);
+    process.stdout.write(chalk.green('✓') + '\n');
   })
-  console.log(`Assets successfully unlocked and stored in ${workingOutputDir}`);
+  console.log(chalk.green(`Assets successfully unlocked and stored in ${workingOutputDir}`));
 }
 
 function createDir(workingOutputDir: string) {
@@ -79,6 +87,7 @@ function createDir(workingOutputDir: string) {
 }
 
 function findAssetShardsInArchives() {
+  console.log(`Validating Vault...`);
   zipArchives.forEach(zipArchive => {
     const archiveDirName = pathLib.parse(zipArchive).name;
 
@@ -110,7 +119,7 @@ function getArchiveIndex(archiveDirName: string) {
 
 function validateFile(filePath: string, expectedMd5: string) {
   if (!expectedMd5) {
-    console.warn('Warning: skipping md5 verification, likely legacy asset detected');
+    // skipping md5 verification, likely legacy asset detected
     return;
   }
   const fileData = fs.readFileSync(filePath);
