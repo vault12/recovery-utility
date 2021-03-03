@@ -1,6 +1,6 @@
 {
   "name": "vault12-recovery",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "A command-line utility for recovering assets from the raw data exported from Vault12 mobile app",
   "main": "index.js",
   "author": "Vault12",
@@ -36,8 +36,9 @@
   },
   "dependencies": {
     "adm-zip": "0.5.2",
+    "chalk": "4.1.0",
     "md5": "2.3.0",
     "shamir": "0.7.1",
-    "sodium-javascript": "0.7.3"
+    "tweetnacl": "1.0.3"
   }
 }
