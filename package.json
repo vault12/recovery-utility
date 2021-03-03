@@ -1,6 +1,6 @@
 {
   "name": "vault12-recovery",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "A command-line utility for recovering assets from the raw data exported from Vault12 mobile app",
   "main": "index.js",
   "author": "Vault12",
