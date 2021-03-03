@@ -38,6 +38,6 @@
     "adm-zip": "0.5.2",
     "md5": "2.3.0",
     "shamir": "0.7.1",
-    "sodium-javascript": "0.7.3"
+    "tweetnacl": "1.0.3"
   }
 }

@@ -5,7 +5,7 @@ import { ExportAssetMetadata, ExportIndexFileModel, ExportVaultMetadata } from '
 const AdmZip = require('adm-zip');
 const calcMd5 = require('md5');
 const { join } = require('shamir');
-const sodium = require('sodium-javascript');
+import { secretbox } from 'tweetnacl';
 const pathLib = require('path');
 
 const outputDir = 'output';
@@ -58,7 +58,7 @@ function restoreAssets() {
       console.error(`Failed to recover ${asset.name}`, error);
       return;
     }
-    let plainText: Buffer;
+    let plainText: Uint8Array;
     try {
       plainText = decryptAsset(asset, recombinedFile, masterKey)
     } catch (error) {
@@ -143,10 +143,9 @@ function recombineAsset(asset: ExportAssetMetadata) {
 
 function decryptAsset(asset: ExportAssetMetadata, encryptedData: Buffer, masterKey: Buffer) {
   const nonce = Buffer.from(asset.nonce, 'base64');
-  const plainText = Buffer.alloc(encryptedData.length - sodium.crypto_secretbox_MACBYTES);
-  const res = sodium.crypto_secretbox_open_easy(plainText, encryptedData, nonce, masterKey);
-  if (!res) {
+  const decrypted = secretbox.open(encryptedData, nonce, masterKey);
+  if (!decrypted) {
     throw new Error(`Failed to decrypt ${asset.name}`);
   }
-  return plainText;
+  return decrypted;
 }
