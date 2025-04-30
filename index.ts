@@ -24,7 +24,7 @@ let workingOutputDir: string;
 
 function main() {
   if (process.argv.length < 3) {
-    console.log(chalk.red('Usage: node index.js <directory>'));
+    console.log(chalk.red('Usage: vault12-recovery <directory>'));
     process.exit(1);
   }
 
@@ -90,7 +90,7 @@ function restoreAssets() {
     } catch (error) {
       console.error(`Failed to recover ${asset.name}`, error.message);
       hasErrors = true;
-      return; // Skip to the next asset
+      return;
     }
     let plainText: Uint8Array;
     try {
@@ -98,7 +98,7 @@ function restoreAssets() {
     } catch (error) {
       console.error(`Failed to decrypt ${asset.name}`, error.message);
       hasErrors = true;
-      return; // Skip to the next asset
+      return;
     }
     try {
       fs.writeFileSync(path(outputDir, asset.name), plainText);
@@ -122,7 +122,7 @@ function createDir(workingOutputDir: string) {
 }
 
 function findAssetShardsInArchives() {
-  console.log(`Validating Vault...`);
+  console.log(chalk.yellow(`Validating Vault...`));
   zipArchives.forEach(zipArchive => {
     const archiveDirName = pathLib.parse(zipArchive).name;
 
@@ -172,8 +172,7 @@ function recombineAsset(asset: ExportAssetMetadata) {
   const shardPaths = asset.shards.filter(shard => !!shard.path).map(shard => shard.path);
 
   if (shardPaths.length < vaultData.shardsRequiredToUnlock) {
-    console.error(`Only ${shardPaths.length} shards found for asset ${asset.name} when ${vaultData.shardsRequiredToUnlock} needed`);
-    return;
+    throw new Error(`Only ${shardPaths.length} shards found for asset ${asset.name} when ${vaultData.shardsRequiredToUnlock} needed`);
   }
   /**
   * prepare for format required by shamir
