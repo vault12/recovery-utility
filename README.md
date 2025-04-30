@@ -7,40 +7,43 @@
   <a href="https://opensource.org/licenses/MIT">
     <img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="MIT License" />
   </a>
-  <img src="https://img.shields.io/david/vault12/recovery-utility" alt="Dependencies" />
   <a href="http://makeapullrequest.com">
     <img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" alt="PRs welcome" />
   </a>
-  <a href="https://twitter.com/_Vault12_">
-    <img src="https://img.shields.io/twitter/follow/_Vault12_?label=Follow&style=social" alt="Follow" />
+  <a href="https://x.com/_Vault12_">
+    <img src="https://img.shields.io/twitter/follow/_Vault12_?label=Follow&style=social" alt="Follow us on X" />
   </a>
 </p>
 
 # Overview
 
-A command-line utility for recovering assets from the raw data exported from [Vault12 mobile app](https://vault12.com/download/).
+The Vault12 Recovery Utility is a command-line tool designed to recover assets from raw data exported from the [Vault12 Guard mobile app](https://vault12.com/download/).
 
 ## Installation
 
-1. Install [node](https://nodejs.org/)
-2. Install the package globally:
-```
-$ npm i -g vault12-recovery
-```
+1. Install [Node.js](https://nodejs.org/).
+2. Install the package globally by running:
+   ```bash
+   npm install -g vault12-recovery
+   ```
+
 ## Usage
 
-1. Export the decryption key (`vault12.json`) from the Vault12 app: *Settings > Advanced > Export My Vault’s Decryption Key*.
-2. Collect the raw Vault data from several Guardian devices via *Settings > Advanced > Export Data for External Vault*. You'll need to collect the amount of files equal to the **Number of Confirmations** you selected when creating the Vault.
-3. Place all exported archives and `vault12.json` file in the same directory, e.g. `~/vault12-files`.
-4. In terminal, run
-```
-$ vault12-recovery ~/vault12-files
-```
-5. You should find all recovered assets from the Vault in the directory `~/vault12-files/output`.
+1. Export the decryption key (`vault12.json`) from the Vault12 app:
+   - **Settings > Advanced > Export My Vault’s Decryption Key**.
+2. Collect the raw Vault data from multiple Guardian devices:
+   - Use **Settings > Advanced > Export Data for External Vault**.
+   - Ensure you collect the number of files equal to the **Number of Confirmations** you selected when creating the Vault.
+3. Place all exported archives and the `vault12.json` file in the same directory, e.g., `~/vault12-files`.
+4. Run the recovery utility in the terminal:
+   ```bash
+   vault12-recovery ~/vault12-files
+   ```
+5. The recovered assets will be saved in the `~/vault12-files/output` directory.
 
 ## License
 
-Vault12 Recovery Utility is released under the [MIT License](http://opensource.org/licenses/MIT).
+**Vault12 Recovery Utility** is released under the [MIT License](http://opensource.org/licenses/MIT).
 
 ## Legal Reminder
 
