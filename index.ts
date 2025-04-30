@@ -19,18 +19,29 @@ console.log('-------------------');
 
 let dir: string;
 let vaultData: ExportVaultMetadata;
-try {
-  dir = getDirectory();
-  vaultData = getVaultData();
-} catch (error) {
-  console.error(chalk.red(error.message));
-  process.exit(1);
+let zipArchives: string[];
+let workingOutputDir: string;
+
+function main() {
+  if (process.argv.length < 3) {
+    console.log(chalk.red('Usage: node index.js <directory>'));
+    process.exit(1);
+  }
+
+  try {
+    dir = getDirectory();
+    vaultData = getVaultData();
+    zipArchives = getZipArchives();
+    findAssetShardsInArchives();
+    workingOutputDir = createDir(path(outputDir));
+    restoreAssets();
+  } catch (error) {
+    console.error(chalk.red(error.message));
+    process.exit(1);
+  }
 }
 
-const zipArchives = getZipArchives();
-findAssetShardsInArchives();
-const workingOutputDir = createDir(path(outputDir));
-restoreAssets();
+main();
 
 function getDirectory() {
   const dir = process.argv[2];
@@ -61,7 +72,7 @@ function getZipArchives() {
   const zipArchives = fs.readdirSync(dir).filter(p => pathLib.extname(p) === '.zip');
 
   if (zipArchives.length < vaultData.shardsRequiredToUnlock) {
-    throw new Error(`According to your security policy, you need to receive data from ${vaultData.shardsRequiredToUnlock} guardians, but you provided only ${zipArchives.length}`).message;
+    throw new Error(`According to your security policy, you need to receive data from ${vaultData.shardsRequiredToUnlock} guardians, but you provided only ${zipArchives.length}`);
   }
 
   return zipArchives;
@@ -149,7 +160,7 @@ function validateFile(filePath: string, expectedMd5: string) {
   const fileData = fs.readFileSync(filePath);
   const md5 = calcMd5(fileData);
   if (md5 !== expectedMd5) {
-    throw new Error(`Wrong md5 for file ${filePath}`).message;
+    throw new Error(`Wrong md5 for file ${filePath}`);
   }
 }
 
@@ -178,7 +189,7 @@ function decryptAsset(asset: ExportAssetMetadata, encryptedData: Buffer, masterK
   const nonce = Buffer.from(asset.nonce, 'base64');
   const decrypted = secretbox.open(encryptedData, nonce, masterKey);
   if (!decrypted) {
-    throw new Error(`Failed to decrypt ${asset.name}`).message;
+    throw new Error(`Failed to decrypt ${asset.name}`);
   }
   return decrypted;
 }
