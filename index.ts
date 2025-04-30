@@ -17,17 +17,39 @@ const indexFile = 'index.json';
 console.log(chalk.whiteBright(`Vault12 Recovery Utility ${version}`));
 console.log('-------------------');
 
-const dir = getDirectory();
-const vaultData = getVaultData();
-const zipArchives = getZipArchives();
-findAssetShardsInArchives();
-const workingOutputDir = createDir(path(outputDir));
-restoreAssets();
+let dir: string;
+let vaultData: ExportVaultMetadata;
+let zipArchives: string[];
+let workingOutputDir: string;
+
+function main() {
+  if (process.argv.length < 3) {
+    console.log(chalk.red('Usage: vault12-recovery <directory>'));
+    process.exit(1);
+  }
+
+  try {
+    dir = getDirectory();
+    vaultData = getVaultData();
+    zipArchives = getZipArchives();
+    findAssetShardsInArchives();
+    workingOutputDir = createDir(path(outputDir));
+    restoreAssets();
+  } catch (error) {
+    console.error(chalk.red(error.message));
+    process.exit(1);
+  }
+}
+
+main();
 
 function getDirectory() {
   const dir = process.argv[2];
   if (!dir) {
     throw new Error('First parameter should be a directory');
+  }
+  if (!fs.existsSync(dir)) {
+    throw new Error(`Directory ${dir} not found`);
   }
   if (!fs.lstatSync(dir).isDirectory()) {
     throw new Error(`${dir} expected to be a directory`);
@@ -37,6 +59,9 @@ function getDirectory() {
 
 function getVaultData(): ExportVaultMetadata {
   const keyFilePath = path(keyFile);
+  if (!fs.existsSync(keyFilePath)) {
+    throw new Error(`Key file ${keyFilePath} not found`);
+  }
   if (!fs.lstatSync(keyFilePath).isFile()) {
     throw new Error(`Expected ${dir} to contain ${keyFilePath}`);
   }
@@ -56,27 +81,37 @@ function getZipArchives() {
 function restoreAssets() {
   const masterKey = Buffer.from(vaultData.masterKey, 'base64');
   const assetsCount = vaultData.assetsMetaData.length;
-
+  let hasErrors = false; // Track if any errors occur
   vaultData.assetsMetaData.forEach((asset, i) => {
     process.stdout.write(`${chalk.yellow(`${i+1}/${assetsCount}`)} Unlocking ${chalk.bold(asset.name)}... `);
     let recombinedFile: Buffer;
     try {
-      recombinedFile = recombineAsset(asset)
+      recombinedFile = recombineAsset(asset);
     } catch (error) {
-      console.error(`Failed to recover ${asset.name}`, error);
+      console.error(`Failed to recover ${asset.name}`, error.message);
+      hasErrors = true;
       return;
     }
     let plainText: Uint8Array;
     try {
-      plainText = decryptAsset(asset, recombinedFile, masterKey)
+      plainText = decryptAsset(asset, recombinedFile, masterKey);
     } catch (error) {
-      console.error(`Failed to decrypt ${asset.name}`, error);
+      console.error(`Failed to decrypt ${asset.name}`, error.message);
+      hasErrors = true;
       return;
     }
-    fs.writeFileSync(path(outputDir, asset.name), plainText);
-    process.stdout.write(chalk.green('✓') + '\n');
-  })
-  console.log(chalk.green(`Assets successfully unlocked and stored in ${workingOutputDir}`));
+    try {
+      fs.writeFileSync(path(outputDir, asset.name), plainText);
+      process.stdout.write(chalk.green('✓') + '\n');
+    } catch (error) {
+      console.error(`Failed to write ${asset.name} to disk`, error.message);
+      hasErrors = true;
+    }
+  });
+
+  if (!hasErrors) {
+    console.log(chalk.green(`Assets successfully unlocked and stored in ${workingOutputDir}`));
+  }
 }
 
 function createDir(workingOutputDir: string) {
@@ -87,7 +122,7 @@ function createDir(workingOutputDir: string) {
 }
 
 function findAssetShardsInArchives() {
-  console.log(`Validating Vault...`);
+  console.log(chalk.yellow(`Validating Vault...`));
   zipArchives.forEach(zipArchive => {
     const archiveDirName = pathLib.parse(zipArchive).name;
 
@@ -137,14 +172,13 @@ function recombineAsset(asset: ExportAssetMetadata) {
   const shardPaths = asset.shards.filter(shard => !!shard.path).map(shard => shard.path);
 
   if (shardPaths.length < vaultData.shardsRequiredToUnlock) {
-    console.error(`Only ${shardPaths.length} shards found for asset ${asset.name} when ${vaultData.shardsRequiredToUnlock} needed`);
-    return;
+    throw new Error(`Only ${shardPaths.length} shards found for asset ${asset.name} when ${vaultData.shardsRequiredToUnlock} needed`);
   }
   /**
   * prepare for format required by shamir
   * 1st byte of file is index of shard the rest is data
   */
-  const buffers = shardPaths.map((path) => fs.readFileSync(path));
+  const buffers = shardPaths.filter((path): path is string => !!path).map((path) => fs.readFileSync(path));
   const obj = {};
   buffers.forEach((v) => obj[v[0]] = v.slice(1));
   return join(obj);
