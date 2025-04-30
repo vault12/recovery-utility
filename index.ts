@@ -17,8 +17,16 @@ const indexFile = 'index.json';
 console.log(chalk.whiteBright(`Vault12 Recovery Utility ${version}`));
 console.log('-------------------');
 
-const dir = getDirectory();
-const vaultData = getVaultData();
+let dir: string;
+let vaultData: ExportVaultMetadata;
+try {
+  dir = getDirectory();
+  vaultData = getVaultData();
+} catch (error) {
+  console.error(chalk.red(error.message));
+  process.exit(1);
+}
+
 const zipArchives = getZipArchives();
 findAssetShardsInArchives();
 const workingOutputDir = createDir(path(outputDir));
@@ -27,18 +35,24 @@ restoreAssets();
 function getDirectory() {
   const dir = process.argv[2];
   if (!dir) {
-    throw new Error('First parameter should be a directory').message;
+    throw new Error('First parameter should be a directory');
+  }
+  if (!fs.existsSync(dir)) {
+    throw new Error(`Directory ${dir} not found`);
   }
   if (!fs.lstatSync(dir).isDirectory()) {
-    throw new Error(`${dir} expected to be a directory`).message;
+    throw new Error(`${dir} expected to be a directory`);
   }
   return dir;
 }
 
 function getVaultData(): ExportVaultMetadata {
   const keyFilePath = path(keyFile);
+  if (!fs.existsSync(keyFilePath)) {
+    throw new Error(`Key file ${keyFilePath} not found`);
+  }
   if (!fs.lstatSync(keyFilePath).isFile()) {
-    throw new Error(`Expected ${dir} to contain ${keyFilePath}`).message;
+    throw new Error(`Expected ${dir} to contain ${keyFilePath}`);
   }
   return JSON.parse(fs.readFileSync(keyFilePath, { encoding: 'utf-8' }));
 }
