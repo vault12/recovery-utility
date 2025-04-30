@@ -56,27 +56,37 @@ function getZipArchives() {
 function restoreAssets() {
   const masterKey = Buffer.from(vaultData.masterKey, 'base64');
   const assetsCount = vaultData.assetsMetaData.length;
-
+  let hasErrors = false; // Track if any errors occur
   vaultData.assetsMetaData.forEach((asset, i) => {
     process.stdout.write(`${chalk.yellow(`${i+1}/${assetsCount}`)} Unlocking ${chalk.bold(asset.name)}... `);
     let recombinedFile: Buffer;
     try {
-      recombinedFile = recombineAsset(asset)
+      recombinedFile = recombineAsset(asset);
     } catch (error) {
       console.error(`Failed to recover ${asset.name}`, error);
-      return;
+      hasErrors = true;
+      return; // Skip to the next asset
     }
     let plainText: Uint8Array;
     try {
-      plainText = decryptAsset(asset, recombinedFile, masterKey)
+      plainText = decryptAsset(asset, recombinedFile, masterKey);
     } catch (error) {
       console.error(`Failed to decrypt ${asset.name}`, error);
-      return;
+      hasErrors = true;
+      return; // Skip to the next asset
     }
-    fs.writeFileSync(path(outputDir, asset.name), plainText);
-    process.stdout.write(chalk.green('✓') + '\n');
-  })
-  console.log(chalk.green(`Assets successfully unlocked and stored in ${workingOutputDir}`));
+    try {
+      fs.writeFileSync(path(outputDir, asset.name), plainText);
+      process.stdout.write(chalk.green('✓') + '\n');
+    } catch (error) {
+      console.error(`Failed to write ${asset.name} to disk`, error);
+      hasErrors = true;
+    }
+  });
+
+  if (!hasErrors) {
+    console.log(chalk.green(`Assets successfully unlocked and stored in ${workingOutputDir}`));
+  }
 }
 
 function createDir(workingOutputDir: string) {
