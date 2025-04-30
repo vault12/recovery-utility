@@ -27,10 +27,10 @@ restoreAssets();
 function getDirectory() {
   const dir = process.argv[2];
   if (!dir) {
-    throw new Error('First parameter should be a directory');
+    throw new Error('First parameter should be a directory').message;
   }
   if (!fs.lstatSync(dir).isDirectory()) {
-    throw new Error(`${dir} expected to be a directory`);
+    throw new Error(`${dir} expected to be a directory`).message;
   }
   return dir;
 }
@@ -38,7 +38,7 @@ function getDirectory() {
 function getVaultData(): ExportVaultMetadata {
   const keyFilePath = path(keyFile);
   if (!fs.lstatSync(keyFilePath).isFile()) {
-    throw new Error(`Expected ${dir} to contain ${keyFilePath}`);
+    throw new Error(`Expected ${dir} to contain ${keyFilePath}`).message;
   }
   return JSON.parse(fs.readFileSync(keyFilePath, { encoding: 'utf-8' }));
 }
@@ -47,7 +47,7 @@ function getZipArchives() {
   const zipArchives = fs.readdirSync(dir).filter(p => pathLib.extname(p) === '.zip');
 
   if (zipArchives.length < vaultData.shardsRequiredToUnlock) {
-    throw new Error(`According to your security policy, you need to receive data from ${vaultData.shardsRequiredToUnlock} guardians, but you provided only ${zipArchives.length}`);
+    throw new Error(`According to your security policy, you need to receive data from ${vaultData.shardsRequiredToUnlock} guardians, but you provided only ${zipArchives.length}`).message;
   }
 
   return zipArchives;
@@ -63,7 +63,7 @@ function restoreAssets() {
     try {
       recombinedFile = recombineAsset(asset);
     } catch (error) {
-      console.error(`Failed to recover ${asset.name}`, error);
+      console.error(`Failed to recover ${asset.name}`, error.message);
       hasErrors = true;
       return; // Skip to the next asset
     }
@@ -71,7 +71,7 @@ function restoreAssets() {
     try {
       plainText = decryptAsset(asset, recombinedFile, masterKey);
     } catch (error) {
-      console.error(`Failed to decrypt ${asset.name}`, error);
+      console.error(`Failed to decrypt ${asset.name}`, error.message);
       hasErrors = true;
       return; // Skip to the next asset
     }
@@ -79,7 +79,7 @@ function restoreAssets() {
       fs.writeFileSync(path(outputDir, asset.name), plainText);
       process.stdout.write(chalk.green('✓') + '\n');
     } catch (error) {
-      console.error(`Failed to write ${asset.name} to disk`, error);
+      console.error(`Failed to write ${asset.name} to disk`, error.message);
       hasErrors = true;
     }
   });
@@ -135,7 +135,7 @@ function validateFile(filePath: string, expectedMd5: string) {
   const fileData = fs.readFileSync(filePath);
   const md5 = calcMd5(fileData);
   if (md5 !== expectedMd5) {
-    throw new Error(`Wrong md5 for file ${filePath}`);
+    throw new Error(`Wrong md5 for file ${filePath}`).message;
   }
 }
 
@@ -164,7 +164,7 @@ function decryptAsset(asset: ExportAssetMetadata, encryptedData: Buffer, masterK
   const nonce = Buffer.from(asset.nonce, 'base64');
   const decrypted = secretbox.open(encryptedData, nonce, masterKey);
   if (!decrypted) {
-    throw new Error(`Failed to decrypt ${asset.name}`);
+    throw new Error(`Failed to decrypt ${asset.name}`).message;
   }
   return decrypted;
 }
