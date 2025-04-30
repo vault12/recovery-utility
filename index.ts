@@ -144,7 +144,7 @@ function recombineAsset(asset: ExportAssetMetadata) {
   * prepare for format required by shamir
   * 1st byte of file is index of shard the rest is data
   */
-  const buffers = shardPaths.map((path) => fs.readFileSync(path));
+  const buffers = shardPaths.filter((path): path is string => !!path).map((path) => fs.readFileSync(path));
   const obj = {};
   buffers.forEach((v) => obj[v[0]] = v.slice(1));
   return join(obj);
