@@ -101,7 +101,7 @@ function restoreAssets() {
       return;
     }
     try {
-      fs.writeFileSync(path(outputDir, asset.name), plainText);
+      fs.writeFileSync(safePath(outputDir, asset.name), plainText);
       process.stdout.write(chalk.green('✓') + '\n');
     } catch (error) {
       console.error(`Failed to write ${asset.name} to disk`, error.message);
@@ -136,7 +136,7 @@ function findAssetShardsInArchives() {
         if (!foundShard) {
           return false;
         }
-        const shardPath = path(archiveDirName, foundShard.fileName);
+        const shardPath = safePath(archiveDirName, foundShard.fileName);
         validateFile(shardPath, assetShard.md5);
         assetShard.path = shardPath;
         return true;
@@ -166,6 +166,20 @@ function validateFile(filePath: string, expectedMd5: string) {
 
 function path(...args: string[]) {
   return pathLib.join(dir, ...args);
+}
+
+/**
+* Joins a file name supplied by vault12.json or a guardian archive index onto
+* baseDir, refusing names that escape it. Both sources are attacker-influenced,
+* so `..` segments and absolute paths must not reach fs.
+*/
+function safePath(baseDir: string, name: string) {
+  const base = pathLib.resolve(path(baseDir));
+  const resolved = pathLib.resolve(base, name);
+  if (!resolved.startsWith(base + pathLib.sep)) {
+    throw new Error(`Refusing to use path outside ${baseDir}: ${name}`);
+  }
+  return resolved;
 }
 
 function recombineAsset(asset: ExportAssetMetadata) {
